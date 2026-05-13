@@ -1,6 +1,7 @@
 import { logger } from "../utils/logger.js";
 import { validateRegistration } from "../utils/validation.js";
 import User from "../models/User.js";
+import { generateTokens } from "../utils/generateToken.js";
 
 // 1. user registration
 const registrationHandler = async (req, res) => {
@@ -24,28 +25,32 @@ const registrationHandler = async (req, res) => {
 
     const { username, email, password } = req.body;
 
-    const user = await User.findOne({ email: email });
+    let user = await User.findOne({ $or: [{ email }, { username }] });
 
     if (user) {
-      logger.warn("User with this email already exists");
-      res.status(400).json({
+      logger.warn("User with this email or username already exists");
+      return res.status(400).json({
         success: false,
         message: "User with this email already exists",
       });
     }
 
-    const payload = {
+    user = new User({
       username,
       email,
       password,
-    };
-
-    user = new User(payload);
+    });
     await user.save();
 
-    return res
-      .status(200)
-      .json({ success: true, message: "Registration Successful" });
+    const { accessToken, refreshToken } = await generateTokens(user);
+
+    logger.warn("User Registered..", user._id);
+    return res.status(201).json({
+      success: true,
+      message: "User Registered..",
+      accessToken,
+      refreshToken,
+    });
   } catch (error) {
     console.log("error", error);
     res.status(500).json({ message: "Internal Server Error" });
