@@ -14,6 +14,16 @@ Handles user authentication and registration.
 
 See [identity-service/README.md](identity-service/README.md) for details.
 
+### API Gateway
+
+Routes auth traffic to the identity service and adds shared security middleware.
+
+- **Location:** `api-gateway/`
+- **Port:** 9090 (default)
+- **Key Features:** Request proxying, rate limiting, Helmet, CORS
+
+See [api-gateway/README.md](api-gateway/README.md) for details.
+
 ## Getting Started
 
 Each microservice is independent. Navigate to its directory and follow the service-specific README.

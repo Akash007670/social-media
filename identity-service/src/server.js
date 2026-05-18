@@ -11,7 +11,7 @@ import { sensitiveEndpointsLimiter } from "../middlewares/sensitiveEndpointLimit
 
 const app = express();
 
-const PORT = process.env.PORT || 8082;
+const PORT = process.env.PORT || 8081;
 
 await connectDb();
 
