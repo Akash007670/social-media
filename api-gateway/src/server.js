@@ -52,6 +52,9 @@ app.use(
   }),
 );
 
+// proxy route for auth endpoint
+app.use("/api/v1/auth", proxy(process.env.IDENTITY_SERVICE_URL, proxyOptions));
+
 // error Handler
 app.use(errorHandler);
 
