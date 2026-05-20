@@ -161,4 +161,33 @@ const refreshTokenHandler = async (req, res) => {
   }
 };
 
-export { registrationHandler, loginHandler, refreshTokenHandler };
+const logoutHandler = async (req, res) => {
+  logger.info("Logout point hit..");
+
+  try {
+    const { refreshToken } = req.body;
+
+    if (!refreshToken) {
+      logger.warn("Refresh token is required for logout");
+      return res.status(400).json({ message: "Refresh token is required" });
+    }
+
+    await RefreshToken.deleteOne({ token: refreshToken });
+
+    logger.info("User logged out successfully");
+    return res.status(200).json({
+      success: true,
+      message: "User logged out successfully",
+    });
+  } catch (error) {
+    logger.error("Logout error", error.message);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+export {
+  registrationHandler,
+  loginHandler,
+  refreshTokenHandler,
+  logoutHandler,
+};
