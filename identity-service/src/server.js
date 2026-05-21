@@ -1,13 +1,13 @@
 import "dotenv/config";
 import express from "express";
-import { connectDb } from "../database/db.js";
-import authRoutes from "../routes/auth-routes.js";
+import { connectDb } from "./database/db.js";
+import authRoutes from "./routes/auth-routes.js";
 import helmet from "helmet";
 import cors from "cors";
-import { logger } from "../utils/logger.js";
-import { errorHandler } from "../middlewares/errorHandler.js";
-import { rateLimiterMiddleware } from "../middlewares/rateLimiter.js";
-import { sensitiveEndpointsLimiter } from "../middlewares/sensitiveEndpointLimiter.js";
+import { logger } from "./utils/logger.js";
+import { errorHandler } from "./middlewares/errorHandler.js";
+import { rateLimiterMiddleware } from "./middlewares/rateLimiter.js";
+import { sensitiveEndpointsLimiter } from "./middlewares/sensitiveEndpointLimiter.js";
 
 const app = express();
 

@@ -2,9 +2,9 @@ import "dotenv/config.js";
 import express from "express";
 import helmet from "helmet";
 import cors from "cors";
-import { logger } from "../utils/logger.js";
-import { errorHandler } from "../middlewares/errorHandler.js";
-import { rateLimiter } from "../middlewares/rateLimiter.js";
+import { logger } from "./utils/logger.js";
+import { errorHandler } from "./middlewares/errorHandler.js";
+import { rateLimiter } from "./middlewares/rateLimiter.js";
 import proxy from "express-http-proxy";
 
 const app = express();
