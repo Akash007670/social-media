@@ -8,7 +8,6 @@ import RefreshToken from "../models/RefreshToken.js";
 const registrationHandler = async (req, res) => {
   logger.info("Registration point hit..");
 
-  console.log(req.body, "Body");
   try {
     if (!req.body) {
       logger.warn("Missing request body");
