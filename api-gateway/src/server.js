@@ -5,6 +5,7 @@ import cors from "cors";
 import { logger } from "./utils/logger.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
 import { rateLimiter } from "./middlewares/rateLimiter.js";
+import { validateToken } from "./middlewares/authMiddleware.js";
 import proxy from "express-http-proxy";
 
 const app = express();
@@ -56,7 +57,25 @@ app.use(
 app.use("/api/v1/auth", proxy(process.env.IDENTITY_SERVICE_URL, proxyOptions));
 
 // proxy route for post service
-app.use("/api/v1/post", proxy(process.env.POST_SERVICE_URL, proxyOptions));
+app.use(
+  "/api/v1/post",
+  validateToken,
+  proxy(process.env.POST_SERVICE_URL, {
+    ...proxyOptions,
+    proxyReqOptDecorator: (proxyReqOpts, srcReq) => {
+      proxyReqOpts.headers["Content-Type"] = "application/json";
+      proxyReqOpts.headers["x-user-id"] = srcReq.user.userId; // passing the user details which we get from validate token middleware
+      return proxyReqOpts;
+    },
+    userResDecorator: (proxyRes, proxyResData, userReq, userRes) => {
+      // Log the response from the Post service
+      logger.info(
+        `Response from Post Service for ${userReq.method} ${userReq.url}: ${proxyRes.statusCode}`,
+      );
+      return proxyResData;
+    },
+  }),
+);
 
 // error Handler
 app.use(errorHandler);

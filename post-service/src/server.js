@@ -5,6 +5,7 @@ import helmet from "helmet";
 import cors from "cors";
 import { errorHandler } from "./middlewares/errorHandler.js";
 import postRoutes from "./routes/post-route.js";
+import { logger } from "./utils/logger.js";
 
 const app = express();
 
@@ -27,5 +28,5 @@ app.use("/api/v1/post", postRoutes);
 app.use(errorHandler);
 
 app.listen(PORT, () => {
-  console.log(`Post Service running on PORT: ${PORT}`);
+  logger.warn(`Post Service running on PORT: ${PORT}`);
 });
