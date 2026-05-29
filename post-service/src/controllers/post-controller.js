@@ -39,5 +39,35 @@ const createPost = async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
+const getAllPost = async (req, res) => {
+  logger.info("Fetching all posts");
+  try {
+    const page = parseInt(req.query.page) || 1; // query parameter
+    const limit = parseInt(req.query.limit) || 10; // query parameter
 
-export { createPost };
+    const offset = (page - 1) * limit; // calculate offset here.
+
+    const posts = await Post.find({})
+      .sort({ createdAt: -1 })
+      .skip(offset)
+      .limit(limit); // sort and add pagination using limit and offset.
+    const totalPosts = await Post.countDocuments(); // Gives total No. of document present in db.
+
+    const result = {
+      posts,
+      currentPage: page,
+      totalPages: Math.ceil(totalPosts / limit),
+      totalPosts: totalPosts,
+    };
+
+    return res.status(200).json({
+      success: true,
+      result,
+    });
+  } catch (error) {
+    logger.error(`Error fetching posts: ${error.message}`);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+export { createPost, getAllPost };

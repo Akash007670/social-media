@@ -6,6 +6,7 @@ import cors from "cors";
 import { errorHandler } from "./middlewares/errorHandler.js";
 import postRoutes from "./routes/post-route.js";
 import { logger } from "./utils/logger.js";
+import redisClient from "../../api-gateway/src/config/redis.js";
 
 const app = express();
 
@@ -22,7 +23,14 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use("/api/v1/post", postRoutes);
+app.use(
+  "/api/v1/post",
+  (req, res, next) => {
+    req.redisClient = redisClient;
+    next();
+  },
+  postRoutes,
+);
 
 // Error handler
 app.use(errorHandler);
