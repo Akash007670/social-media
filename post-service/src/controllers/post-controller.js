@@ -31,6 +31,11 @@ const createPost = async (req, res) => {
 
     await newlyCreatedPost.save();
 
+    const cacheKeys = await req.redisClient.keys("Post:*");
+    if (cacheKeys.length > 0) {
+      await req.redisClient.del(cacheKeys);
+    }
+
     return res
       .status(201)
       .json({ success: true, message: "Post created successfully" });
@@ -47,6 +52,22 @@ const getAllPost = async (req, res) => {
 
     const offset = (page - 1) * limit; // calculate offset here.
 
+    // Add caching
+
+    const cacheKey = `Post:${page}:${limit}`;
+
+    console.log(cacheKey, "Cache key");
+
+    const cachedPosts = await req.redisClient.get(cacheKey);
+
+    if (cachedPosts) {
+      return res.json({
+        success: true,
+        message: "Retrieved Cached Posts",
+        posts: JSON.parse(cachedPosts),
+      });
+    }
+
     const posts = await Post.find({})
       .sort({ createdAt: -1 })
       .skip(offset)
@@ -59,6 +80,9 @@ const getAllPost = async (req, res) => {
       totalPages: Math.ceil(totalPosts / limit),
       totalPosts: totalPosts,
     };
+
+    // If fetched first time then save the result in cache
+    await req.redisClient.setex(cacheKey, 60, JSON.stringify(result));
 
     return res.status(200).json({
       success: true,
