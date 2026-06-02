@@ -2,6 +2,28 @@ import { logger } from "../utils/logger.js";
 import { validatePostCreation } from "../utils/validation.js";
 import Post from "../models/Post.js";
 
+const POST_CACHE_PREFIX = "posts";
+const POST_CACHE_TTL_SECONDS = 180; // in seconds (3 minutes)
+
+const getPostCacheKey = (page, limit) =>
+  `${POST_CACHE_PREFIX}:${page}:${limit}`;
+
+const invalidatePostCache = async (req) => {
+  if (!req.redisClient) return;
+
+  try {
+    const cachePattern = `${POST_CACHE_PREFIX}:*`;
+    const keys = await req.redisClient.keys(cachePattern);
+
+    if (keys.length > 0) {
+      await req.redisClient.del(keys);
+      logger.info(`Invalidated ${keys.length} post cache keys`);
+    }
+  } catch (error) {
+    logger.error(`Error invalidating post cache: ${error.message}`);
+  }
+};
+
 const createPost = async (req, res) => {
   logger.info("Creating a new post");
   try {
@@ -30,11 +52,7 @@ const createPost = async (req, res) => {
     }
 
     await newlyCreatedPost.save();
-
-    const cacheKeys = await req.redisClient.keys("Post:*");
-    if (cacheKeys.length > 0) {
-      await req.redisClient.del(cacheKeys);
-    }
+    await invalidatePostCache(req);
 
     return res
       .status(201)
@@ -54,9 +72,9 @@ const getAllPost = async (req, res) => {
 
     // Add caching
 
-    const cacheKey = `Post:${page}:${limit}`;
+    const cacheKey = getPostCacheKey(page, limit);
 
-    console.log(cacheKey, "Cache key");
+    logger.info(`Post cache key: ${cacheKey}`);
 
     const cachedPosts = await req.redisClient.get(cacheKey);
 
@@ -82,7 +100,11 @@ const getAllPost = async (req, res) => {
     };
 
     // If fetched first time then save the result in cache
-    await req.redisClient.setex(cacheKey, 60, JSON.stringify(result));
+    await req.redisClient.setex(
+      cacheKey,
+      POST_CACHE_TTL_SECONDS,
+      JSON.stringify(result),
+    );
 
     return res.status(200).json({
       success: true,
