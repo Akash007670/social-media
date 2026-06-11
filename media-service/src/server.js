@@ -5,6 +5,7 @@ import helmet from "helmet";
 import cors from "cors";
 import { errorHandler } from "./middlewares/errorHandler.js";
 import { logger } from "./utils/logger.js";
+import mediaRoutes from "./routes/media-routes.js";
 
 const app = express();
 
@@ -20,6 +21,9 @@ app.use((req, res, next) => {
   logger.info(`Received ${req.method} request to ${req.url}`);
   next();
 });
+
+// Register media routes
+app.use("/media", mediaRoutes);
 
 // Error handler
 app.use(errorHandler);
