@@ -77,6 +77,27 @@ app.use(
   }),
 );
 
+// proxy route for media service
+app.use(
+  "/api/v1/media",
+  validateToken,
+  proxy(process.env.MEDIA_SERVICE_URL, {
+    ...proxyOptions,
+    proxyReqOptDecorator: (proxyReqOpts, srcReq) => {
+      proxyReqOpts.headers["Content-Type"] = "application/json";
+      proxyReqOpts.headers["x-user-id"] = srcReq.user.userId; // passing the user details which we get from validate token middleware
+      return proxyReqOpts;
+    },
+    userResDecorator: (proxyRes, proxyResData, userReq, userRes) => {
+      // Log the response from the Media service
+      logger.info(
+        `Response from Media Service for ${userReq.method} ${userReq.url}: ${proxyRes.statusCode}`,
+      );
+      return proxyResData;
+    },
+  }),
+);
+
 // error Handler
 app.use(errorHandler);
 

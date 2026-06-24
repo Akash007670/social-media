@@ -7,7 +7,7 @@ import {
 
 const router = express.Router();
 
-router.post("/", uploadMedia);
+router.post("/upload", uploadMedia);
 
 router.get("/:id", getMediaById);
 
