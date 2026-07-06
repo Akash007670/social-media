@@ -86,6 +86,11 @@ app.use(
     proxyReqOptDecorator: (proxyReqOpts, srcReq) => {
       proxyReqOpts.headers["Content-Type"] = "application/json";
       proxyReqOpts.headers["x-user-id"] = srcReq.user.userId; // passing the user details which we get from validate token middleware
+
+      if (!srcReq.headers["content-type"]?.startsWith("multipart/form-data")) {
+        proxyReqOpts.headers["Content-Type"] = "application/json";
+      }
+
       return proxyReqOpts;
     },
     userResDecorator: (proxyRes, proxyResData, userReq, userRes) => {
@@ -95,6 +100,7 @@ app.use(
       );
       return proxyResData;
     },
+    parseReqBody: false, // Important for file uploads; prevents body parsing
   }),
 );
 
